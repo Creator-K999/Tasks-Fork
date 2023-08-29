@@ -2,7 +2,7 @@ MENU = "1- Add Task\n \
        2- Delete Task\n \
        3- Complete Task"
 FILE_NAME = "repeated_tasks.csv"
-CSV_LINE = "{task_name},{task_repitition},{last_completetion_date}"
+
 
 def main():
     close = False
@@ -24,6 +24,10 @@ def main():
             if option in ("Y", "N"):
                 close = (option == "N")
                 break
+
+
+def getCSVLine(task_name, task_repitition, last_completetion_date = None):
+    return f"{task_name},{task_repitition},{last_completetion_date}"
 
 
 def take_option() -> int:
@@ -104,11 +108,7 @@ def add_task() -> None:
         
     
     with open(FILE_NAME, "a") as file:
-        file.write(CSV_LINE.format(
-            task_name=task_name,
-            task_repitition=task_repitition,
-            last_completetion_date=None
-        ))
+        file.write(getCSVLine(task_name, task_repitition))
 
 
 def replace_task(taskline: int, task_name: str, task_repitition: str | int) -> None:
@@ -116,12 +116,4 @@ def replace_task(taskline: int, task_name: str, task_repitition: str | int) -> N
         lines = file.readlines()
     
     with open(FILE_NAME, "w") as file:
-        file.writelines([
-            *lines[:taskline],
-            CSV_LINE.format(
-                        task_name=task_name,
-                        task_repitition=task_repitition,
-                        last_completetion_date=None
-                        ),
-            *lines[taskline+1:]    
-        ])
+        file.writelines([*lines[:taskline], getCSVLine(task_name, task_repitition), *lines[taskline+1:]])
