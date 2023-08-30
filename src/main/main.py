@@ -1,5 +1,5 @@
+from datetime import datetime, timedelta
 from os import system
-from datetime import datetime
 from typing import TextIO
 
 
@@ -19,7 +19,7 @@ class Main:
     @classmethod
     def run(cls):
 
-        options_dict = (None, Main.print_due_tasks, Main.add_task, Main.delete_task, Main.complete_task)
+        options_dict = (None, Main.get_due_tasks, Main.add_task, Main.delete_task, Main.complete_task)
 
         while True:
             system("cls")
@@ -107,8 +107,13 @@ class Main:
             return -1, ""
 
     @classmethod
-    def is_due(cls, last_completion_date: str) -> bool:
-        pass
+    def is_due(cls, last_completion_date: str, repetition: int) -> bool:
+        repetition = timedelta(days=repetition)
+
+        next_due_date = datetime.strptime(last_completion_date, "%d/%m/%Y") + repetition
+        current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+        return current_date > next_due_date
 
     @classmethod
     def get_tasks(cls) -> list:
@@ -126,19 +131,22 @@ class Main:
             print(f"{line_no:<10}{task_name:<25}{repetition:<5}{last_completion_date:<20}")
 
     @classmethod
-    def print_due_tasks(cls) -> None:
+    def get_due_tasks(cls) -> str | None:
+        due_tasks = [f"{'Task No.':<16}{'Name':<20}{'Repetition':<20}{'last_completion_date':<20}\n"]
+
         try:
             lines = cls.get_tasks()
         except FileNotFoundError as e:
             print("Error: File Not Found!!\nPlease add a task to auto-create a file.")
             return
 
-        print(f"{'Task No.':<10}{'Name':<25}{'Repetition':<5}{'last_completion_date':<20}")
         for line_no, task_details in enumerate(lines, start=1):
             task_name, repetition, last_completion_date = task_details.split(",")
 
-            if cls.is_due(last_completion_date):
-                print(f"{line_no:<10}{task_name:<25}{repetition:<5}{last_completion_date:<20}")
+            if cls.is_due(last_completion_date, int(repetition)):
+                due_tasks.append(f"{line_no:<16}{task_name:<20}{repetition:<20}{last_completion_date:<20}\n")
+
+        return "".join(due_tasks)
 
     @classmethod
     def write_task(cls, task_name: str, task_repetition) -> None:
