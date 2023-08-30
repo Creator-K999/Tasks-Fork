@@ -1,5 +1,6 @@
+from os import system
 from datetime import datetime
-from typing import TextIO, Callable
+from typing import TextIO
 
 
 class Main:
@@ -13,17 +14,24 @@ class Main:
     OPTIONS_NO: int = 4
     FILE_NAME: str = "repeated_tasks.csv"
 
+    last_message = None
+
     @classmethod
     def run(cls):
 
         options_dict = (None, Main.print_due_tasks, Main.add_task, Main.delete_task, Main.complete_task)
 
         while True:
+            system("cls")
+
+            if cls.last_message:
+                print(cls.last_message)
+
             option = cls.take_option()
             function = options_dict[option]
 
             if function:
-                function()
+                cls.last_message = function()
                 continue
 
             break
@@ -44,10 +52,17 @@ class Main:
 
     @classmethod
     def add_task(cls) -> None:
-        replace = "Y"
+        line_no = -1
+        task_details = None
+        replace = None
+
         task_name = input("Task Name: ")
 
-        line_no, task_details = cls.task_exist(task_name)
+        try:
+            line_no, task_details = cls.task_exist(task_name)
+
+        except FileNotFoundError:
+            pass
 
         if line_no != -1:
             while True:
@@ -68,7 +83,7 @@ class Main:
 
                 if task_repetition > 0:
                     break
-            except ValueError as e:
+            except ValueError:
                 continue
 
         if replace == "Y":
@@ -145,8 +160,10 @@ class Main:
             # 1:]])
 
     @classmethod
-    def delete_task(cls, task_name: str) -> bool:
+    def delete_task(cls) -> bool:
         task_exists = False
+
+        task_name = input("Task Name: ")
 
         with open(cls.FILE_NAME, "r") as file:
             lines = file.readlines()
@@ -163,8 +180,10 @@ class Main:
         return task_exists
 
     @classmethod
-    def complete_task(cls, task_name: str) -> bool:
+    def complete_task(cls) -> str:
         task_exists = False
+
+        task_name = input("Task Name: ")
 
         with open(cls.FILE_NAME, "r") as file:
             lines = file.readlines()
@@ -172,7 +191,7 @@ class Main:
             for line_no, line_details in enumerate(lines):
                 if line_details.split(",")[0] == task_name:
                     task = line_details.split(",")
-                    task[2] = datetime.now()  # Updating Last Completion Date
+                    task[2] = datetime.now().strftime("%Y-%m-%d")  # Updating Last Completion Date
                     lines[line_no] = ",".join(task)
 
                     task_exists = True
@@ -181,4 +200,5 @@ class Main:
             with open(cls.FILE_NAME, "w") as file:
                 file.writelines(lines)
 
-        return task_exists
+        else:
+            return f"Task {task_name!r} Doesn't Exist"
