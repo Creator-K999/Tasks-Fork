@@ -1,6 +1,9 @@
-MENU = "1- Add Task\n \
-       2- Delete Task\n \
-       3- Complete Task"
+MENU = "1-View Due Tasks\n \
+        2- Add Task\n \
+        3- Delete Task\n \
+        4- Complete Task\n \
+        99- Exit"
+OPTIONS_NO = 4
 FILE_NAME = "repeated_tasks.csv"
 
 
@@ -11,10 +14,12 @@ def main():
         option = take_option()
 
         if option == 1:
-            add_task()
+            print_due_tasks()
         elif option == 2:
-            delete_task()
+            add_task()
         elif option == 3:
+            delete_task()
+        elif option == 4:
             complete_task()
 
 
@@ -35,15 +40,16 @@ def take_option() -> int:
 
     while True:
         try:
-            option = int(input("Please pick an option (1-3): "))
+            option = int(input(f"Please pick an option (1-{OPTIONS_NO}): "))
 
-            if 0 < option < 4:
+            if 0 < option < OPTIONS_NO + 1:
                 break
 
         except:
             continue
 
     return option
+
 
 def task_exist(task_name: str) -> tuple[int, str]:
     with open(FILE_NAME, "r") as file:
@@ -55,6 +61,10 @@ def task_exist(task_name: str) -> tuple[int, str]:
         
         return (-1, None)
 
+
+def print_due_tasks() -> None:
+    with open(FILE_NAME, "r") as file:
+        file.readlines()
 
 
 def add_task() -> None:
@@ -74,9 +84,9 @@ def add_task() -> None:
         
         while True:
             try:
-                option = int(input(f"Please pick an option (1-3): "))
+                option = int(input(f"Please pick an option (1-{OPTIONS_NO}): "))
 
-                if 0 < option < 4:
+                if 0 < option < OPTIONS_NO + 1:
                     break
 
             except:
@@ -101,7 +111,6 @@ def add_task() -> None:
             continue
 
 
-
     if option == 1:
         replace_task(task_info[0], task_name, task_repitition)
         return
@@ -117,3 +126,11 @@ def replace_task(taskline: int, task_name: str, task_repitition: str | int) -> N
     
     with open(FILE_NAME, "w") as file:
         file.writelines([*lines[:taskline], getCSVLine(task_name, task_repitition), *lines[taskline+1:]])
+
+
+def delete_task() -> None:
+    ...
+
+
+def complete_task() -> None:
+    ...
