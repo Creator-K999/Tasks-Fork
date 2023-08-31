@@ -5,13 +5,14 @@ from typing import TextIO
 
 class Main:
     MENU: str = \
-        """1- View Due Tasks
-2- Add Task
-3- Delete Task
-4- Complete Task
-0- Exit"""
+        """1. View Tasks
+2. View Due Tasks
+3. Add Task
+4. Delete Task
+5. Complete Task
+0. Exit"""
 
-    OPTIONS_NO: int = 4
+    OPTIONS_NO: int = 5
     FILE_NAME: str = "repeated_tasks.csv"
 
     last_message = None
@@ -19,7 +20,8 @@ class Main:
     @classmethod
     def run(cls):
 
-        options_dict = (None, Main.get_due_tasks, Main.add_task, Main.delete_task, Main.complete_task)
+        options_dict = (None, Main.get_str_tasks, Main.get_str_due_tasks, Main.add_task,
+                        Main.delete_task, Main.complete_task)
 
         while True:
             system("cls")
@@ -108,9 +110,11 @@ class Main:
 
     @classmethod
     def is_due(cls, last_completion_date: str, repetition: int) -> bool:
-        repetition = timedelta(days=repetition)
+        if last_completion_date == "":
+            return False
 
-        next_due_date = datetime.strptime(last_completion_date, "%d/%m/%Y") + repetition
+        repetition = timedelta(days=repetition)
+        next_due_date = datetime.strptime(last_completion_date, "%Y-%m-%d") + repetition
         current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
         return current_date > next_due_date
@@ -121,22 +125,28 @@ class Main:
             return file.read().splitlines()
 
     @classmethod
-    def print_tasks(cls) -> None:
-        lines = cls.get_tasks()
+    def get_str_tasks(cls) -> str | None:
+        tasks = [f"{'Task No.':<16}{'Name':<20}{'Repetition':<20}{'last_completion_date':<20}\n"]
 
-        print(f"{'Task No.':<10}{'Name':<25}{'Repetition':<5}{'last_completion_date':<20}")
+        try:
+            lines = cls.get_tasks()
+        except FileNotFoundError:
+            print("Error: File Not Found!!\nPlease add a task to auto-create a file.")
+            return
+
         for line_no, task_details in enumerate(lines, start=1):
             task_name, repetition, last_completion_date = task_details.split(",")
+            tasks.append(f"{line_no:<16}{task_name:<20}{repetition:<20}{last_completion_date:<20}")
 
-            print(f"{line_no:<10}{task_name:<25}{repetition:<5}{last_completion_date:<20}")
+        return "".join(tasks)
 
     @classmethod
-    def get_due_tasks(cls) -> str | None:
+    def get_str_due_tasks(cls) -> str | None:
         due_tasks = [f"{'Task No.':<16}{'Name':<20}{'Repetition':<20}{'last_completion_date':<20}\n"]
 
         try:
             lines = cls.get_tasks()
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             print("Error: File Not Found!!\nPlease add a task to auto-create a file.")
             return
 

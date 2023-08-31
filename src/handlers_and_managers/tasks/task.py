@@ -29,7 +29,6 @@ class Task:
     #
     # SETTERS
     #
-
     @task_name.setter
     def task_name(self, value):
         if type(value) != str:
